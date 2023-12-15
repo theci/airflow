@@ -1,7 +1,7 @@
 # import airflow
 from airflow import DAG
 from airflow.models import Variable
-from airflow.operators.python_operator import PythonOperator
+from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.providers.amazon.aws.hooks.base_aws import AwsGenericHook
 
@@ -145,7 +145,7 @@ with dag:
         python_callable=download_pdfs_from_year,
         op_kwargs={
             'year_variable': 'year',
-            'bucket': 'primuslearning-enem-bucket',
+            'bucket': 'enum-bucket-mzc0918',
         },
     )
 
