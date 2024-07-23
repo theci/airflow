@@ -23,7 +23,7 @@ with DAG(
         python_callable = upload_to_s3,
         op_kwargs = {
             'filename' : '/opt/airflow/data/test.csv',
-            'key' : 'upload-data/test.csv',
+            'key' : 'data/test.csv',
             'bucket_name' : 'pch-test-bucket'
         }
     )
