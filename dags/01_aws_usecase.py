@@ -28,6 +28,9 @@ with DAG(
     def _fetch_ratings(api_conn_id, s3_conn_id, s3_bucket, **context):
         year = context["execution_date"].year
         month = context["execution_date"].month
+        my-s3="pch-test-bucket"
+        my-crawler="my-crawler"
+        my-athena="my-ahtena"
 
         # Fetch ratings from our API.
         logging.info(f"Fetching ratings for {year}/{month:02d}")
@@ -61,14 +64,14 @@ with DAG(
         op_kwargs={
             "api_conn_id": "movielens",
             "s3_conn_id": "my_aws_conn",
-            "s3_bucket": os.environ["RATINGS_BUCKET"],
+            "s3_bucket": my-s3,
         },
     )
 
     trigger_crawler = GlueTriggerCrawlerOperator(
         aws_conn_id="my_aws_conn",
         task_id="trigger_crawler",
-        crawler_name=os.environ["CRAWLER_NAME"],
+        crawler_name=my-crawler,
     )
 
     rank_movies = AWSAthenaOperator(
@@ -85,7 +88,7 @@ with DAG(
             GROUP BY movieid
             ORDER BY avg_rating DESC
         """,
-        output_location=f"s3://{os.environ['RANKINGS_BUCKET']}/{{{{ds}}}}",
+        output_location=f"s3://{my-s3}/{{{{ds}}}}",
     )
 
     fetch_ratings >> trigger_crawler >> rank_movies
