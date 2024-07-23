@@ -9,7 +9,7 @@ from airflow.providers.amazon.aws.operators.s3 import (
 MY_S3_BUCKET = "pch-test-bucket"
 MY_FOLDER = "s3tos3source/"
 MY_FILENAME = "job-without-var.py"
-MY_S3_BUCKET_DELIMITER = "/"
+MY_S3_BUCKET_DELIMITER = "data/"
 AWS_CONN_ID = "s3_connection"
 MY_S3_BUCKET_TO_COPY_TO = "s3tos3target"
 
