@@ -1,51 +1,48 @@
-from airflow import Dataset
-from airflow.decorators import dag
-from datetime import datetime
-from airflow.providers.amazon.aws.operators.s3 import (
-    S3ListOperator,
-    S3CopyObjectOperator,
-)
+from airflow import DAG
+from airflow.providers.amazon.aws.operators.s3 import S3CopyObjectOperator
+from datetime import datetime, timedelta
 
-MY_S3_BUCKET = "pch-test-bucket"
-MY_FOLDER = "s3tos3source/"
-MY_FILENAME = "job-without-var.py"
-MY_S3_BUCKET_DELIMITER = "data/"
-AWS_CONN_ID = "s3_connection"
-MY_S3_BUCKET_TO_COPY_TO = "s3tos3target"
+# DAG 설정
+default_args = {
+    'owner': 'airflow',
+    'depends_on_past': False,
+    'start_date': datetime(2023, 7, 17),
+    'email_on_failure': False,
+    'email_on_retry': False,
+    'retries': 1,
+    'retry_delay': timedelta(minutes=5),
+}
 
-my_dataset = Dataset(
-    f"s3://{MY_S3_BUCKET}{MY_S3_BUCKET_DELIMITER}{MY_FOLDER}{MY_FILENAME}"
-)
-
-@dag(
-    dag_id="from-s3-to-s3",
-    start_date=datetime(2023, 7, 17),
-    schedule=[my_dataset],
+# Airflow DAG 정의
+with DAG(
+    'move_s3_objects',
+    default_args=default_args,
+    description='Move objects within AWS S3',
+    schedule_interval=timedelta(days=1),
     catchup=False,
-)
-def from_s3_to_s3():
-    # list all existing files in MY_FOLDER in MY_S3_BUCKET
-    list_files = S3ListOperator(
-        task_id=f"list_files",
-        aws_conn_id=AWS_CONN_ID,
-        bucket=MY_S3_BUCKET,
-        prefix=MY_FOLDER,
-        delimiter=MY_S3_BUCKET_DELIMITER,
+) as dag:
+
+    # 이동할 S3 객체 정보
+    source_bucket_name = 'pch-test-bucket'
+    source_object_key = 's3tos3source/data/job-without-var.py'
+
+    dest_bucket_name = 'pch-test-bucket'
+    dest_object_key = 's3tos3target'
+
+    # S3 객체 복사 작업 정의
+    move_object = S3CopyObjectOperator(
+        task_id='move_object',
+        source_bucket_name=source_bucket_name,
+        source_bucket_key=source_object_key,
+        dest_bucket_name=dest_bucket_name,
+        dest_bucket_key=dest_object_key,
+        aws_conn_id='s3_connection',  # AWS 연결 ID 설정
+        replace=True,  # 목적지에 같은 이름의 객체가 이미 있는 경우 덮어쓸지 여부
     )
 
-    # copy all files to MY_S3_BUCKET_TO_COPY_TO
-    copy_files = S3CopyObjectOperator.partial(
-        task_id="copy_files",
-        aws_conn_id=AWS_CONN_ID,
-    ).expand_kwargs(
-        list_files.output.map(
-            lambda x: {
-                "source_bucket_key": f"s3://{MY_S3_BUCKET}{MY_S3_BUCKET_DELIMITER}{x}",
-                "dest_bucket_key": f"s3://{MY_S3_BUCKET_TO_COPY_TO}{MY_S3_BUCKET_DELIMITER}{x}",
-            }
-        )
-    )
+    # DAG 실행 순서 정의
+    move_object
 
-    list_files >> copy_files
+# DAG 객체 반환
+dag
 
-from_s3_to_s3()
