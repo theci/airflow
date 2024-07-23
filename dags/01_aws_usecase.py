@@ -62,7 +62,7 @@ with DAG(
         python_callable=_fetch_ratings,
         op_kwargs={
             "api_conn_id": "movielens",
-            "s3_conn_id": "my_aws_conn",
+            "s3_conn_id": "aws_test",
             "s3_bucket": my_s3,
         },
     )
