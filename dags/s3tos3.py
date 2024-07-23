@@ -1,8 +1,8 @@
 from airflow import DAG
-from airflow.providers.amazon.aws.operators.s3 import S3CopyObjectOperator
+from airflow.providers.amazon.aws.operators.s3 import S3ListOperator
+from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from datetime import datetime, timedelta
 
-# DAG 설정
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
@@ -13,7 +13,6 @@ default_args = {
     'retry_delay': timedelta(minutes=5),
 }
 
-# Airflow DAG 정의
 with DAG(
     'move_s3_objects',
     default_args=default_args,
@@ -22,27 +21,30 @@ with DAG(
     catchup=False,
 ) as dag:
 
-    # 이동할 S3 객체 정보
     source_bucket_name = 'pch-test-bucket'
     source_object_key = 's3tos3source/data/job-without-var.py'
 
     dest_bucket_name = 'pch-test-bucket'
     dest_object_key = 's3tos3target'
 
-    # S3 객체 복사 작업 정의
-    move_object = S3CopyObjectOperator(
-        task_id='move_object',
-        source_bucket_name=source_bucket_name,
-        source_bucket_key=source_object_key,
-        dest_bucket_name=dest_bucket_name,
-        dest_bucket_key=dest_object_key,
-        aws_conn_id='s3_connection',  # AWS 연결 ID 설정
-        replace=True,  # 목적지에 같은 이름의 객체가 이미 있는 경우 덮어쓸지 여부
+    # S3Hook을 사용하여 객체 복사
+    def copy_s3_object(source_bucket_name, source_object_key, dest_bucket_name, dest_object_key, replace=True):
+        s3_hook = S3Hook(aws_conn_id='s3_connection')
+        s3_hook.copy_object(source_bucket_name, source_object_key, dest_bucket_name, dest_object_key, replace=replace)
+
+    copy_object_task = PythonOperator(
+        task_id='copy_object_task',
+        python_callable=copy_s3_object,
+        op_kwargs={
+            'source_bucket_name': source_bucket_name,
+            'source_object_key': source_object_key,
+            'dest_bucket_name': dest_bucket_name,
+            'dest_object_key': dest_object_key,
+            'replace': True  # Replace 옵션 설정
+        }
     )
 
-    # DAG 실행 순서 정의
-    move_object
+    copy_object_task
 
-# DAG 객체 반환
 dag
 
