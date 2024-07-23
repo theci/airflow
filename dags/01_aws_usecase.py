@@ -68,14 +68,14 @@ with DAG(
     )
 
     trigger_crawler = GlueTriggerCrawlerOperator(
-        aws_conn_id="my_aws_conn",
+        aws_conn_id="aws_test",
         task_id="trigger_crawler",
         crawler_name=my_crawler,
     )
 
     rank_movies = AWSAthenaOperator(
         task_id="rank_movies",
-        aws_conn_id="my_aws_conn",
+        aws_conn_id="aws_test",
         database="airflow",
         query="""
             SELECT movieid, AVG(rating) as avg_rating, COUNT(*) as num_ratings
