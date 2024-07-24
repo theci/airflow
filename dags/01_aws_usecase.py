@@ -5,6 +5,7 @@ import tempfile
 from os import path
 
 import pandas as pd
+import pendulum
 from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
 from airflow.providers.amazon.aws.operators.athena import AthenaOperator
@@ -16,8 +17,7 @@ from airflow import DAG
 with DAG(
     dag_id="01_aws_usecase",
     description="DAG demonstrating some AWS-specific hooks and operators.",
-    start_date=dt.datetime(year=2019, month=1, day=1),
-    end_date=dt.datetime(year=2019, month=3, day=1),
+    start_date=pendulum.datetime(2023, 3, 10, tz="Asia/Seoul"),
     schedule_interval="@monthly",
     default_args={"depends_on_past": True},
 ) as dag:
@@ -79,11 +79,11 @@ with DAG(
                 SELECT movieid, rating, CAST(from_unixtime(timestamp) AS DATE) AS date
                 FROM ratings
             )
-            WHERE date <= DATE('{{ ds }}')
+            WHERE date <= '{{ data_interval_start.in_timezone("Asia/Seoul") | ds }}'
             GROUP BY movieid
             ORDER BY avg_rating DESC
         """,
-        output_location=f"s3://pch-test-bucket/{{{{ds}}}}",
+        output_location=f"s3://pch-test-bucket/airflow-output/{{{{ds}}}}",
     )
 
     fetch_ratings >> trigger_crawler >> rank_movies
