@@ -1,20 +1,17 @@
 import datetime as dt
 import logging
 import os
-from os import path
 import tempfile
+from os import path
 
 import pandas as pd
-
-from airflow import DAG
-
 from airflow.operators.python import PythonOperator
 from airflow.providers.amazon.aws.hooks.s3 import S3Hook
-from airflow.providers.amazon.aws.operators.athena import AWSAthenaOperator
-
+from airflow.providers.amazon.aws.operators.athena import AthenaOperator
 from custom.hooks import MovielensHook
 from custom.operators import GlueTriggerCrawlerOperator
 
+from airflow import DAG
 
 with DAG(
     dag_id="01_aws_usecase",
@@ -73,7 +70,7 @@ with DAG(
         crawler_name=my_crawler,
     )
 
-    rank_movies = AWSAthenaOperator(
+    rank_movies = AthenaOperator(
         task_id="rank_movies",
         aws_conn_id="aws_test",
         database="airflow",
