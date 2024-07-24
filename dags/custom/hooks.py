@@ -1,7 +1,6 @@
 import datetime as dt
 
 import requests
-
 from airflow.hooks.base_hook import BaseHook
 
 
@@ -24,6 +23,7 @@ class MovielensHook(BaseHook):
 
     DEFAULT_SCHEMA = "http"
     DEFAULT_PORT = 5000
+    
 
     def __init__(self, conn_id, retry=3):
         super().__init__()
@@ -44,7 +44,7 @@ class MovielensHook(BaseHook):
         Returns the connection used by the hook for querying data.
         Should in principle not be used directly.
         """
-
+        API_SERVER = "3.36.65.187"  
         if self._session is None:
             # Fetch config for the given connection (host, login, etc).
             config = self.get_connection(self._conn_id)
@@ -55,7 +55,7 @@ class MovielensHook(BaseHook):
             schema = config.schema or self.DEFAULT_SCHEMA
             port = config.port or self.DEFAULT_PORT
 
-            self._base_url = f"{schema}://{config.host}:{port}"
+            self._base_url = f"{schema}://{API_SERVER}:{port}"
 
             # Build our session instance, which we will use for any
             # requests to the API.
