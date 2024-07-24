@@ -57,20 +57,20 @@ with DAG(
         python_callable=_fetch_ratings,
         op_kwargs={
             "api_conn_id": "movielens",
-            "s3_conn_id": "aws_test",
+            "s3_conn_id": "my_aws_conn",
             "s3_bucket": "pch-test-bucket",
         },
     )
 
     trigger_crawler = GlueTriggerCrawlerOperator(
-        aws_conn_id="aws_test",
+        aws_conn_id="my_aws_conn",
         task_id="trigger_crawler",
         crawler_name="my-crawler",
     )
 
     rank_movies = AthenaOperator(
         task_id="rank_movies",
-        aws_conn_id="aws_test",
+        aws_conn_id="my_aws_conn",
         database="airflow",
         query="""
             SELECT movieid, AVG(rating) as avg_rating, COUNT(*) as num_ratings
