@@ -66,6 +66,7 @@ with DAG(
         aws_conn_id="my_aws_conn",
         task_id="trigger_crawler",
         crawler_name="my-crawler",
+        region_name="ap-northeast-2"
     )
 
     rank_movies = AthenaOperator(
