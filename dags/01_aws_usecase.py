@@ -1,4 +1,4 @@
-import datetime as dt
+import datetime
 import logging
 import os
 import tempfile
@@ -19,7 +19,7 @@ local_tz = pendulum.timezone("Asia/Seoul")
 with DAG(
     dag_id="01_aws_usecase",
     description="DAG demonstrating some AWS-specific hooks and operators.",
-    start_date=dt(2023, 3, 10, tzinfo=local_tz),
+    start_date=datetime(2023, 3, 10, tzinfo=local_tz),
     schedule_interval="@monthly",
     default_args={"depends_on_past": True},
 ) as dag:
