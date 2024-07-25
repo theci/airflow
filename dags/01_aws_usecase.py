@@ -14,10 +14,12 @@ from custom.operators import GlueTriggerCrawlerOperator
 
 from airflow import DAG
 
+local_tz = pendulum.timezone("Asia/Seoul")
+
 with DAG(
     dag_id="01_aws_usecase",
     description="DAG demonstrating some AWS-specific hooks and operators.",
-    start_date=pendulum.datetime(2023, 3, 10, tz="Asia/Seoul"),
+    start_date=datetime(2023, 3, 10, tzinfo=local_tz)
     schedule_interval="@monthly",
     default_args={"depends_on_past": True},
 ) as dag:
@@ -79,7 +81,7 @@ with DAG(
                 SELECT movieid, rating, CAST(from_unixtime(timestamp) AS DATE) AS date
                 FROM ratings
             )
-            WHERE date <= '{{ data_interval_start.in_timezone("Asia/Seoul") | ds }}'
+            WHERE date <= DATE('{{ ds }}') 
             GROUP BY movieid
             ORDER BY avg_rating DESC
         """,
