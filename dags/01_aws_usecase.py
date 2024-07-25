@@ -19,7 +19,7 @@ local_tz = pendulum.timezone("Asia/Seoul")
 with DAG(
     dag_id="01_aws_usecase",
     description="DAG demonstrating some AWS-specific hooks and operators.",
-    start_date=datetime.datetime(2023, 3, 10, tzinfo=local_tz),
+    start_date=datetime.datetime(2023, 4, 10, tzinfo=local_tz),
     schedule_interval="@monthly",
     default_args={"depends_on_past": True},
 ) as dag:
@@ -75,7 +75,7 @@ with DAG(
         task_id="rank_movies",
         aws_conn_id="my_aws_conn",
         database="airflow",
-	region_name="ap-northeast-2",
+        region_name="ap-northeast-2",
         query="""
             SELECT movieid, AVG(rating) as avg_rating, COUNT(*) as num_ratings
             FROM (
