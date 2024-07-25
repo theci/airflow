@@ -16,6 +16,7 @@ from airflow import DAG
 
 local_tz = pendulum.timezone("Asia/Seoul")
 
+
 with DAG(
     dag_id="01_aws_usecase",
     description="DAG demonstrating some AWS-specific hooks and operators.",
@@ -25,8 +26,9 @@ with DAG(
 ) as dag:
 
     def _fetch_ratings(api_conn_id, s3_conn_id, s3_bucket, **context):
-        year = context["execution_date"].year
-        month = context["execution_date"].month
+        now = datetime.datetime.now() 
+        year = now.year
+        month = now.month
 
         # Fetch ratings from our API.
         logging.info(f"Fetching ratings for {year}/{month:02d}")
