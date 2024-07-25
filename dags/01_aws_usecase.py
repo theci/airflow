@@ -75,6 +75,7 @@ with DAG(
         task_id="rank_movies",
         aws_conn_id="my_aws_conn",
         database="airflow",
+	region_name="ap-northeast-2",
         query="""
             SELECT movieid, AVG(rating) as avg_rating, COUNT(*) as num_ratings
             FROM (
